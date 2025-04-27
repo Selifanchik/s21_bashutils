@@ -1,20 +1,12 @@
 #include "s21_cat.h"
 
 
-int main(int argc, char** argv) {
-    int i;
-    if (argc > 2 && argv[1][0] == '-') {
-        parse_flag(argc, argv);
-        i = 2;
-    } else i = 1;
-    for (; i < argc; i++) {
-        print_file(argv[i]);
-    }
+int main(int argc, const char** argv) {
     return 0;
 }
 
 void print_file(const char* file_name) {
-    char buff[100] = {};
+    char buff[256] = {};
     FILE* fp = fopen(file_name, "r");
     if (fp == NULL) {
         printf("cat: %s: No such file or directory", file_name);
@@ -27,13 +19,14 @@ void print_file(const char* file_name) {
     return;
 }
 
-void parse_flag(int argc, const char** argv) {
-    char* use_flag = (char*)malloc(10 * sizeof(char*));
-    for (int i = 1; i < argc; i++) {
+void parse_flag(int argc, const char** argv, char* use_flag, int* ind_arg) {
+    int ind = 0;
+    for (int i = 0; i < argc; i++) {
         if (argv[i][0] == '-') append_flag(argv[i], use_flag);
+        else ind_arg[ind++] = i;
     }
-    puts(use_flag);
 }
+
 
 void append_flag(const char* str, char* use_flag) {
     for (int i = 0; i < count_flag; i++) {
