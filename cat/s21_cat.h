@@ -3,23 +3,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <getopt.h>
 
-void print_file(const char* file_name);
-void parse_flag();
-void flag_handler();
-void append_flag();
+enum {size_buffer = 256};
 
-enum {count_flag = 8};
-
-typedef struct {
-    char* flags;
-    char* simple_flag;
-} OPTIONS;
-
-OPTIONS opt[count_flag] = {
-    {"-b", "b"}, {"-e", "vE"}, {"-n", "n"}, {"-s", "s"}, {"-t", "vT"},
-    {"-number-nonblank", "b"}, {"-number", "n"}, {"-squeezee-blank", "s"}
+struct flags {
+  int flag_s;
+  int flag_v;
+  int flag_e;
+  int flag_t;
+  int flag_b;
+  int flag_n;
 };
+
+struct option long_options[] = {
+  {"number-nonblank", optional_argument, NULL, 'b'},
+  {"number", optional_argument, NULL, 'n'},
+  {"squeeze-blank", optional_argument, NULL, 's'},
+  {0, 0, 0, 0}
+};
+
+int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index, int* ind);
 
 #endif
