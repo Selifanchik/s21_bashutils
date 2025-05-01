@@ -9,13 +9,8 @@ int main(int argc, char** argv) {
         flag_error = 1;
         printf("Memory allocation error");
     }
-    if (parse_string(argc, argv, &use_flag, arg_ind, &ind) == 0) {
-        int index;
-        for (int i = 0; i < ind; i++) {
-            index = arg_ind[i];
-            print_file(argv[index], &use_flag);
-        }
-    }
+    if (parse_string(argc, argv, &use_flag, arg_ind, &ind) == 0)
+        print_file(argv, &use_flag, arg_ind, &ind);
     free(arg_ind);
     return flag_error;
 }
@@ -49,6 +44,7 @@ int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index, 
             if (use_flag->flag_b == 0) use_flag->flag_n = 1;
             break;
         case '?':
+            opterr = 0;
             flag_error = 1;
             break;
         default:
@@ -67,35 +63,38 @@ int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index, 
     return flag_error;
 }
 
-void print_file(const char* file_name, struct flags* use_flag) {
-    FILE* file_stream = fopen(file_name, "r");
-    if (!file_stream) {
-        printf("./s21_cat: %s: No such file or directory", file_name);
-    } else process_file(file_stream, use_flag);
+void print_file(char** file_name, struct flags* use_flag, int* arg_ind, int* ind) {
+    int index, count_number = 0;
+    for (int i = 0; i < *ind; i++) {
+        index = arg_ind[i];
+        FILE* file_stream = fopen(file_name[index], "r");
+        if (!file_stream) {
+            printf("./s21_cat: %s: No such file or directory", file_name[index]);
+        } else {
+            process_file(file_stream, use_flag, &count_number);
+            fclose(file_stream);
+        }
+    }
 }
 
-
-void process_file(FILE* file_stream, struct flags* use_flag) {
+void process_file(FILE* file_stream, struct flags* use_flag, int* count_number) {
     int symbol;
-    int count_number = 0, count_empty_line = 0;
+    int count_empty_line = 0;
     char previous_symbol = '\n';
     int print_done = 0;
     while ((symbol = fgetc(file_stream)) != EOF) {
+        print_done = 0;
         if (symbol == '\n' && previous_symbol == '\n') count_empty_line++;
         else count_empty_line = 0;
-        if (use_flag->flag_s) 
-            if (count_empty_line > 1) continue;
+        if (use_flag->flag_s && count_empty_line > 1) continue;
         if (previous_symbol == '\n' && (use_flag->flag_n || (use_flag->flag_b && count_empty_line == 0))) 
-            printf("%6d\t", ++count_number);
-        if (use_flag->flag_e) 
-            if (symbol == '\n') printf("$");
-        if (use_flag->flag_t) 
-            if (symbol == '\t') {
+            printf("%6d\t", ++(*count_number));
+        if (use_flag->flag_e && symbol == '\n') printf("$");
+        if (use_flag->flag_t && symbol == '\t') {
                 printf("^I");
                 print_done = 1;
             }
-        if (use_flag->flag_v ) 
-            if (symbol != '\n' && symbol != '\t')
+        if (use_flag->flag_v && symbol != '\n' && symbol != '\t')
                 process_flag_v(&symbol, &print_done);
         if (!print_done) {
             printf("%c", symbol);
@@ -105,12 +104,13 @@ void process_file(FILE* file_stream, struct flags* use_flag) {
 }
 
 void process_flag_v(const int* symbol, int* print_done) {
-    if (*symbol >= 0 && *symbol <= 31) {
+    if (*symbol >= 0 && *symbol <= 31)
         printf("^%c", *symbol + 64);
-        *print_done = 1;
-    }
-    if (*symbol > 127) {
+    if (*symbol > 127)
         printf("M-%c", *symbol % 128);
-        *print_done = 1;
-    }
+    if (*symbol == 127)
+        printf("^?");
+    if (*symbol >= 32 && *symbol <=126)
+        printf("%c", *symbol);
+    *print_done = 1;
 }
