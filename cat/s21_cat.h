@@ -24,5 +24,7 @@ struct option long_options[] = {
 };
 
 int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index, int* ind);
-
+void print_file(const char* file_name, struct flags* use_flag);
+void process_file(FILE* file_name, struct flags* use_flag);
+void process_flag_v(const int* symbol, int* print_done);
 #endif
