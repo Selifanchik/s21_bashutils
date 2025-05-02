@@ -98,10 +98,7 @@ void process_file(FILE* file_stream, struct flags* use_flag,
     if (previous_symbol == '\n' &&
         (use_flag->flag_n || (use_flag->flag_b && count_empty_line == 0)))
       printf("%6d\t", ++(*count_number));
-    if (use_flag->flag_e && symbol == '\n') {
-      printf("$");
-      print_done = 0;
-    }
+    if (use_flag->flag_e && symbol == '\n') printf("$");
     if (use_flag->flag_t && symbol == '\t') {
       printf("^I");
       print_done = 1;
@@ -109,9 +106,7 @@ void process_file(FILE* file_stream, struct flags* use_flag,
     if (use_flag->flag_v && symbol != '\n' && symbol != '\t' && symbol >= 0 &&
         symbol <= 255)
       show_nonpriting_char(&symbol, &print_done);
-    if (!print_done) {
-      printf("%c", symbol);
-    }
+    if (!print_done) printf("%c", symbol);
     previous_symbol = symbol;
   }
 }
