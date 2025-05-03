@@ -24,9 +24,10 @@ struct option long_options[] = {
 
 int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index,
                  int* ind);
-void print_file(char** file_name, struct flags* use_flag, int* arg_ind,
-                int* ind);
-void process_file(FILE* file_stream, struct flags* use_flag, int* count_number);
+void print_file(char** file_name, struct flags* use_flag, const int* arg_ind,
+                const int* ind);
+void process_file(FILE* file_stream, struct flags* use_flag, int* count_number,
+                  char* previous_symbol, int* count_empty_line);
 void show_nonpriting_char(const int* symbol, int* print_done);
 
 #endif

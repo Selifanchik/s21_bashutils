@@ -67,36 +67,37 @@ int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index,
   return flag_error;
 }
 
-void print_file(char** file_name, struct flags* use_flag, int* arg_ind,
-                int* ind) {
-  int index, count_number = 0;
+void print_file(char** file_name, struct flags* use_flag, const int* arg_ind,
+                const int* ind) {
+  int count_number = 0;
+  int count_empty_line = 0;
+  char previous_symbol = '\n';
   for (int i = 0; i < *ind; i++) {
-    index = arg_ind[i];
+    int index = arg_ind[i];
     FILE* file_stream = fopen(file_name[index], "r");
     if (!file_stream) {
       printf("./s21_cat: %s: No such file or directory", file_name[index]);
     } else {
-      process_file(file_stream, use_flag, &count_number);
+      process_file(file_stream, use_flag, &count_number, &previous_symbol,
+                   &count_empty_line);
       fclose(file_stream);
     }
   }
 }
 
-void process_file(FILE* file_stream, struct flags* use_flag,
-                  int* count_number) {
+void process_file(FILE* file_stream, struct flags* use_flag, int* count_number,
+                  char* previous_symbol, int* count_empty_line) {
   int symbol;
-  int count_empty_line = 0;
-  char previous_symbol = '\n';
-  int print_done = 0;
+  int print_done;
   while ((symbol = fgetc(file_stream)) != EOF) {
     print_done = 0;
-    if (symbol == '\n' && previous_symbol == '\n')
-      count_empty_line++;
+    if (symbol == '\n' && *previous_symbol == '\n')
+      (*count_empty_line)++;
     else
-      count_empty_line = 0;
-    if (use_flag->flag_s && count_empty_line > 1) continue;
-    if (previous_symbol == '\n' &&
-        (use_flag->flag_n || (use_flag->flag_b && count_empty_line == 0)))
+      *count_empty_line = 0;
+    if (use_flag->flag_s && *count_empty_line > 1) continue;
+    if (*previous_symbol == '\n' &&
+        (use_flag->flag_n || (use_flag->flag_b && *count_empty_line == 0)))
       printf("%6d\t", ++(*count_number));
     if (use_flag->flag_e && symbol == '\n') printf("$");
     if (use_flag->flag_t && symbol == '\t') {
@@ -107,7 +108,7 @@ void process_file(FILE* file_stream, struct flags* use_flag,
         symbol <= 255)
       show_nonpriting_char(&symbol, &print_done);
     if (!print_done) printf("%c", symbol);
-    previous_symbol = symbol;
+    *previous_symbol = symbol;
   }
 }
 
