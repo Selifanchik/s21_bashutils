@@ -76,7 +76,7 @@ void print_file(char** file_name, struct flags* use_flag, const int* arg_ind,
     int index = arg_ind[i];
     FILE* file_stream = fopen(file_name[index], "r");
     if (!file_stream) {
-      printf("./s21_cat: %s: No such file or directory", file_name[index]);
+      printf("./s21_cat: %s: No such file or directory\n", file_name[index]);
     } else {
       process_file(file_stream, use_flag, &count_number, &previous_symbol,
                    &count_empty_line);
