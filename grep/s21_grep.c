@@ -70,16 +70,18 @@ void process_file(FILE* file_stream, struct flags* use_flag) {
     return;
   }
   while(fgets(buffer, sizeof(buffer), file_stream)) {
+    int print_done = 0;
     const char* start_find = buffer;
     regmatch_t match;
     while(regexec(&regex, start_find, 1, &match, 0) == 0) {
-      puts(start_find);
-      puts("\n");
-      // printf("%d\n ", match.rm_so);
+      print_done = 1;
       printf("%.*s", match.rm_so, start_find);
+      printf("\033[01;31m%.*s\033[0m", match.rm_eo - match.rm_so, start_find + match.rm_so);
       start_find += match.rm_eo + 1;
     }
+    if (print_done) printf("%s", start_find);
   }
+  printf("\n");
   regfree(&regex);
   return ;
 }
