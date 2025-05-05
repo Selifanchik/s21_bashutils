@@ -47,8 +47,8 @@ int parse_string(int argc, char** argv, struct flags* use_flag) {
   return flag_error;
 }
 
-void print_file(char** argv, struct flags* use_flag, const int* ind_pattern, const int* ind_file,
-                const int* argc) {
+void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
+                const int* ind_file, const int* argc) {
   for (int i = *ind_file; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
@@ -60,7 +60,8 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern, con
   }
 }
 
-void process_file(FILE* file_stream, const char* file_name, struct flags* use_flag, const char* pattern) {
+void process_file(FILE* file_stream, const char* file_name,
+                  struct flags* use_flag, const char* pattern) {
   char buffer[4096];
   regex_t regex;
   int ret, count_str = 0, count_find_str = 0;
@@ -77,12 +78,13 @@ void process_file(FILE* file_stream, const char* file_name, struct flags* use_fl
   int flag_break = 0;
   while (fgets(buffer, sizeof(buffer), file_stream) && !flag_break) {
     char* ptr_end_string;
-    if ((ptr_end_string = strrchr(buffer, '\n')) != NULL) *ptr_end_string = '\0';
+    if ((ptr_end_string = strrchr(buffer, '\n')) != NULL)
+      *ptr_end_string = '\0';
     int reg = regexec(&regex, buffer, 0, NULL, 0);
     count_str++;
     if (reg == 0) count_find_str++;
-    if (use_flag->flag_l) {
-      printf("%s", file_name);
+    if (use_flag->flag_l && !reg) {
+      printf("%s\n", file_name);
       flag_break = 1;
     }
     if (use_flag->flag_e || use_flag->flag_i) print_find_string(buffer, &regex);
@@ -92,7 +94,7 @@ void process_file(FILE* file_stream, const char* file_name, struct flags* use_fl
     }
     if (use_flag->flag_v && (reg != 0)) printf("%s\n", buffer);
   }
-  if (use_flag->flag_c) printf("%d", count_find_str);
+  if (use_flag->flag_c) printf("%d\n", count_find_str);
   regfree(&regex);
   return;
 }
@@ -105,7 +107,7 @@ void print_find_string(const char* buffer, regex_t* regex) {
     print_done = 1;
     printf("%.*s", match.rm_so, start_find);
     printf("%.*s", match.rm_eo - match.rm_so, start_find + match.rm_so);
-    start_find += match.rm_eo + 1;
+    start_find += match.rm_eo;
   }
   if (print_done) printf("%s\n", start_find);
 }
