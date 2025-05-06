@@ -1,7 +1,7 @@
 #include "s21_cat.h"
 
 int main(int argc, char** argv) {
-  struct flags use_flag = {};
+  CATFLAGS use_flag = {};
   int flag_error = 0;
   int* arg_ind = (int*)calloc(argc - 1, sizeof(int));
   int ind = 0;
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   return flag_error;
 }
 
-int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index,
+int parse_string(int argc, char** argv, CATFLAGS* use_flag, int* arg_index,
                  int* ind) {
   int opt, flag_error = 0;
   while ((opt = getopt_long(argc, argv, "-setETbn", long_options, NULL)) !=
@@ -67,7 +67,7 @@ int parse_string(int argc, char** argv, struct flags* use_flag, int* arg_index,
   return flag_error;
 }
 
-void print_file(char** file_name, struct flags* use_flag, const int* arg_ind,
+void print_file(char** file_name, CATFLAGS* use_flag, const int* arg_ind,
                 const int* ind) {
   int count_number = 0;
   int count_empty_line = 0;
@@ -85,7 +85,7 @@ void print_file(char** file_name, struct flags* use_flag, const int* arg_ind,
   }
 }
 
-void process_file(FILE* file_stream, struct flags* use_flag, int* count_number,
+void process_file(FILE* file_stream, CATFLAGS* use_flag, int* count_number,
                   char* previous_symbol, int* count_empty_line) {
   int symbol;
   int print_done;
