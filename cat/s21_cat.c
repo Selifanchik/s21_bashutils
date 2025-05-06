@@ -3,20 +3,20 @@
 int main(int argc, char** argv) {
   CATFLAGS flags = {};
   int flag_error = 0;
-  int* arg_ind = (int*)calloc(argc - 1, sizeof(int));
-  int ind = 0;
-  if (arg_ind == 0) {
+  int* file_index = (int*)calloc(argc - 1, sizeof(int));
+  int file_count = 0;
+  if (file_index == 0) {
     flag_error = 1;
     printf("Memory allocation error");
   }
-  if (parse_string(argc, argv, &flags, arg_ind, &ind) == 0)
-    print_file(argv, &flags, arg_ind, &ind);
-  free(arg_ind);
+  if (parse_string(argc, argv, &flags, file_index, &file_count) == 0)
+    print_file(argv, &flags, file_index, &file_count);
+  free(file_index);
   return flag_error;
 }
 
-int parse_string(int argc, char** argv, CATFLAGS* flags, int* arg_index,
-                 int* ind) {
+int parse_string(int argc, char** argv, CATFLAGS* flags, int* file_index,
+                 int* file_count) {
   int opt, flag_error = 0;
   while ((opt = getopt_long(argc, argv, "-setETbn", long_options, NULL)) !=
              -1 &&
@@ -52,7 +52,7 @@ int parse_string(int argc, char** argv, CATFLAGS* flags, int* arg_index,
         break;
       default:
         if (optarg)
-          arg_index[(*ind)++] = optind - 1;
+          file_index[(*file_count)++] = optind - 1;
         else {
           printf("Unknown error");
           flag_error = 1;
@@ -60,25 +60,24 @@ int parse_string(int argc, char** argv, CATFLAGS* flags, int* arg_index,
         break;
     }
   }
-  if (*ind == 0 && !flag_error) {
+  if (*file_count == 0 && !flag_error) {
     printf("No arguments");
     flag_error = 1;
   }
   return flag_error;
 }
 
-void print_file(char** file_name, CATFLAGS* flags, const int* arg_ind,
-                const int* ind) {
-  int count_number = 0;
-  int count_empty_line = 0;
-  char previous_symbol = '\n';
-  for (int i = 0; i < *ind; i++) {
-    int index = arg_ind[i];
+void print_file(char** file_name, CATFLAGS* flags, const int* file_index,
+                const int* file_count) {
+  int count_number = 0, count_empty_line = 0;
+  char prev_char = '\n';
+  for (int i = 0; i < *file_count; i++) {
+    int index = file_index[i];
     FILE* file_stream = fopen(file_name[index], "r");
     if (!file_stream) {
       printf("./s21_cat: %s: No such file or directory\n", file_name[index]);
     } else {
-      process_file(file_stream, flags, &count_number, &previous_symbol,
+      process_file(file_stream, flags, &count_number, &prev_char,
                    &count_empty_line);
       fclose(file_stream);
     }
@@ -86,17 +85,17 @@ void print_file(char** file_name, CATFLAGS* flags, const int* arg_ind,
 }
 
 void process_file(FILE* file_stream, CATFLAGS* flags, int* count_number,
-                  char* previous_symbol, int* count_empty_line) {
+                  char* prev_char, int* count_empty_line) {
   int symbol;
   int print_done;
   while ((symbol = fgetc(file_stream)) != EOF) {
     print_done = 0;
-    if (symbol == '\n' && *previous_symbol == '\n')
+    if (symbol == '\n' && *prev_char == '\n')
       (*count_empty_line)++;
     else
       *count_empty_line = 0;
     if (flags->flag_s && *count_empty_line > 1) continue;
-    if (*previous_symbol == '\n' &&
+    if (*prev_char == '\n' &&
         (flags->flag_n || (flags->flag_b && *count_empty_line == 0)))
       printf("%6d\t", ++(*count_number));
     if (flags->flag_e && symbol == '\n') printf("$");
@@ -108,7 +107,7 @@ void process_file(FILE* file_stream, CATFLAGS* flags, int* count_number,
         symbol <= 255)
       show_nonpriting_char(&symbol, &print_done);
     if (!print_done) printf("%c", symbol);
-    *previous_symbol = symbol;
+    *prev_char = symbol;
   }
 }
 
