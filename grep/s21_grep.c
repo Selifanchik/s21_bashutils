@@ -8,12 +8,16 @@ int main(int argc, char** argv) {
     int ind_file = optind + 1;
     print_file(argv, &use_flag, &ind_pattern, &ind_file, &argc);
   }
+  // printf("e = %d, i = %d; v = %d, c = %d, l = %d, n = %d, h = %d, s = %d, f =
+  // %d, o = %d\n", use_flag.flag_e, use_flag.flag_i, use_flag.flag_v,
+  // use_flag.flag_c, use_flag.flag_l, use_flag.flag_n, use_flag.flag_h,
+  // use_flag.flag_s, use_flag.flag_f, use_flag.flag_o);
   return flag_error;
 }
 
 int parse_string(int argc, char** argv, struct flags* use_flag) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+eivcln", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+eivclnhsfo", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
@@ -34,6 +38,18 @@ int parse_string(int argc, char** argv, struct flags* use_flag) {
       case 'n':
         use_flag->flag_n = 1;
         break;
+      case 'h':
+        use_flag->flag_h = 1;
+        break;
+      case 's':
+        use_flag->flag_s = 1;
+        break;
+      case 'f':
+        use_flag->flag_f = 1;
+        break;
+      case 'o':
+        use_flag->flag_o = 1;
+        break;
       case '?':
         opterr = 0;
         flag_error = 1;
@@ -41,7 +57,7 @@ int parse_string(int argc, char** argv, struct flags* use_flag) {
     }
   }
   if (argc < optind + 2) {
-    printf("No arguments");
+    printf("No arguments\n");
     flag_error = 1;
   }
   return flag_error;
@@ -50,10 +66,8 @@ int parse_string(int argc, char** argv, struct flags* use_flag) {
 void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
                 const int* ind_file, const int* argc) {
   for (int i = *ind_file; i < *argc; i++) {
-    FILE* file_stream = fopen(argv[i], "r");
-    if (!file_stream) {
-      printf("./s21_grep: %s: No such file or directory\n", argv[i]);
-    } else {
+    FILE* file_stream = file_open(argv[i], use_flag);
+    if (file_stream) {
       process_file(file_stream, argv[i], use_flag, argv[*ind_pattern]);
       fclose(file_stream);
     }
@@ -99,4 +113,11 @@ void process_file(FILE* file_stream, const char* file_name,
   free(buffer_ptr);
   regfree(&regex);
   return;
+}
+
+FILE* file_open(const char* file_name, struct flags* use_flag) {
+  FILE* file_stream = fopen(file_name, "r");
+  if (!file_stream && !use_flag->flag_s)
+    printf("./s21_grep: %s: No such file or directory\n", file_name);
+  return file_stream;
 }

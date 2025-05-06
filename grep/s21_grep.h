@@ -14,6 +14,10 @@ struct flags {
   int flag_c;
   int flag_l;
   int flag_n;
+  int flag_h;
+  int flag_s;
+  int flag_f;
+  int flag_o;
 };
 
 int parse_string(int argc, char** argv, struct flags* use_flag);
@@ -22,5 +26,6 @@ void print_file(char** file_name, struct flags* use_flag,
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern);
 // void print_match(const char* buffer, regex_t* regex);
+FILE* file_open(const char* file_name, struct flags* use_flag);
 
 #endif
