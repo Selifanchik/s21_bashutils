@@ -63,14 +63,14 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern) {
   regex_t regex;
-  int match, count_str = 0, count_find_str = 0;
+  int ret, count_str = 0, count_find_str = 0;
   if (use_flag->flag_i)
-    match = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE);
+    ret = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE);
   else
-    match = regcomp(&regex, pattern, REG_EXTENDED);
-  if (match != 0) {
+    ret = regcomp(&regex, pattern, REG_EXTENDED);
+  if (ret != 0) {
     char errbuf[100];
-    regerror(match, &regex, errbuf, sizeof(errbuf));
+    regerror(ret, &regex, errbuf, sizeof(errbuf));
     printf("Error: %s\n", errbuf);
     return;
   }
@@ -81,19 +81,19 @@ void process_file(FILE* file_stream, const char* file_name,
     char* ptr_end_string;
     if ((ptr_end_string = strrchr(buffer_ptr, '\n')) != NULL)
       *ptr_end_string = '\0';
-    int reg = regexec(&regex, buffer_ptr, 0, NULL, 0);
+    int match = regexec(&regex, buffer_ptr, 0, NULL, 0);
     count_str++;
-    if (reg == 0) count_find_str++;
-    if (use_flag->flag_l && !reg) {
+    if (match == 0) count_find_str++;
+    if (use_flag->flag_l && !match) {
       printf("%s\n", file_name);
       flag_break = 1;
     }
     if (use_flag->flag_e || use_flag->flag_i) print_match(buffer_ptr, &regex);
     if (use_flag->flag_n) {
-      if (reg == 0) printf("%d:", count_str);
+      if (match == 0) printf("%d:", count_str);
       print_match(buffer_ptr, &regex);
     }
-    if (use_flag->flag_v && (reg != 0)) printf("%s\n", buffer_ptr);
+    if (use_flag->flag_v && (match != 0)) printf("%s\n", buffer_ptr);
   }
   if (use_flag->flag_c) printf("%d\n", count_find_str);
   free(buffer_ptr);
@@ -101,9 +101,9 @@ void process_file(FILE* file_stream, const char* file_name,
   return;
 }
 
-void print_match(const char* buffer, regex_t* regex) {
+  void print_match(const char* buffer_ptr, regex_t* regex) {
   int print_done = 0;
-  const char* start_find = buffer;
+  const char* start_find = buffer_ptr;
   regmatch_t match;
   while (regexec(regex, start_find, 1, &match, 0) == 0) {
     print_done = 1;
