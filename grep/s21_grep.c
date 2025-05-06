@@ -64,14 +64,14 @@ void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern) {
   char buffer[4096];
   regex_t regex;
-  int ret, count_str = 0, count_find_str = 0;
+  int match, count_str = 0, count_find_str = 0;
   if (use_flag->flag_i)
-    ret = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE);
+    match = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE);
   else
-    ret = regcomp(&regex, pattern, REG_EXTENDED);
-  if (ret != 0) {
+    match = regcomp(&regex, pattern, REG_EXTENDED);
+  if (match != 0) {
     char errbuf[100];
-    regerror(ret, &regex, errbuf, sizeof(errbuf));
+    regerror(match, &regex, errbuf, sizeof(errbuf));
     printf("Error: %s\n", errbuf);
     return;
   }
@@ -87,10 +87,10 @@ void process_file(FILE* file_stream, const char* file_name,
       printf("%s\n", file_name);
       flag_break = 1;
     }
-    if (use_flag->flag_e || use_flag->flag_i) print_find_string(buffer, &regex);
+    if (use_flag->flag_e || use_flag->flag_i) print_match(buffer, &regex);
     if (use_flag->flag_n) {
       if (reg == 0) printf("%d:", count_str);
-      print_find_string(buffer, &regex);
+      print_match(buffer, &regex);
     }
     if (use_flag->flag_v && (reg != 0)) printf("%s\n", buffer);
   }
@@ -99,7 +99,7 @@ void process_file(FILE* file_stream, const char* file_name,
   return;
 }
 
-void print_find_string(const char* buffer, regex_t* regex) {
+void print_match(const char* buffer, regex_t* regex) {
   int print_done = 0;
   const char* start_find = buffer;
   regmatch_t match;
