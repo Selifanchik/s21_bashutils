@@ -14,7 +14,7 @@ typedef struct {
   int flag_t;
   int flag_b;
   int flag_n;
-} CATFLAGS;
+} CatFlags;
 
 struct option long_options[] = {
     {"number-nonblank", optional_argument, NULL, 'b'},
@@ -22,11 +22,11 @@ struct option long_options[] = {
     {"squeeze-blank", optional_argument, NULL, 's'},
     {0, 0, 0, 0}};
 
-int parse_string(int argc, char** argv, CATFLAGS* flags, int* arg_index,
+int parse_string(int argc, char** argv, CatFlags* flags, int* arg_index,
                  int* ind);
-void print_file(char** file_name, CATFLAGS* flags, const int* arg_ind,
+void print_file(char** file_name, CatFlags* flags, const int* arg_ind,
                 const int* ind);
-void process_file(FILE* file_stream, CATFLAGS* flags, int* count_number,
+void process_file(FILE* file_stream, CatFlags* flags, int* count_number,
                   char* previous_symbol, int* count_empty_line);
 void show_nonpriting_char(const int* symbol, int* print_done);
 
