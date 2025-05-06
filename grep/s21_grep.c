@@ -70,14 +70,14 @@ void process_file(FILE* file_stream, const char* file_name,
   while (getline(&line_ptr, &len, file_stream) != -1 && !flag_break) {
     char* ptr_end_string = strrchr(line_ptr, '\n');
     if (ptr_end_string != NULL) *ptr_end_string = '\0';
-    process_line(line_ptr, ++count_str, &regex, use_flag, &count_find_str, file_name, &flag_break);
+    process_line(line_ptr, ++count_str, &regex, use_flag, &count_find_str,
+                 file_name, &flag_break);
   }
   if (use_flag->flag_c) printf("%d\n", count_find_str);
   free(line_ptr);
   regfree(&regex);
   return;
 }
-
 
 int compile_regex(regex_t* regex, const char* pattern, int case_insensitive) {
   int flags = REG_EXTENDED;

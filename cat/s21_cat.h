@@ -20,8 +20,7 @@ struct option long_options[] = {
     {"number-nonblank", optional_argument, NULL, 'b'},
     {"number", optional_argument, NULL, 'n'},
     {"squeeze-blank", optional_argument, NULL, 's'},
-    {0, 0, 0, 0}
-};
+    {0, 0, 0, 0}};
 
 int parse_string(int argc, char** argv, CATFLAGS* flags, int* arg_index,
                  int* ind);

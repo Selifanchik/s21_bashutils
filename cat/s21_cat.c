@@ -59,7 +59,7 @@ int parse_string(int argc, char** argv, CATFLAGS* flags, int* file_index,
     }
   }
   if (*file_count == 0 && !flag_error) {
-    printf("No arguments");
+    printf("No input files specified");
     flag_error = 1;
   }
   return flag_error;
