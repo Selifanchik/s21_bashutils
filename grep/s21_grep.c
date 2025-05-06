@@ -60,6 +60,25 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
   }
 }
 
+void process_file(FILE* file_stream, const char* file_name,
+                  struct flags* use_flag, const char* pattern) {
+  regex_t regex;
+  if (compile_regex(&regex, pattern, use_flag->flag_i) != 0) return;
+  char* line_ptr = NULL;
+  size_t len = 0;
+  int count_str = 0, count_find_str = 0, flag_break = 0;
+  while (getline(&line_ptr, &len, file_stream) != -1 && !flag_break) {
+    char* ptr_end_string = strrchr(line_ptr, '\n');
+    if (ptr_end_string != NULL) *ptr_end_string = '\0';
+    process_line(line_ptr, ++count_str, &regex, use_flag, &count_find_str, file_name, &flag_break);
+  }
+  if (use_flag->flag_c) printf("%d\n", count_find_str);
+  free(line_ptr);
+  regfree(&regex);
+  return;
+}
+
+
 int compile_regex(regex_t* regex, const char* pattern, int case_insensitive) {
   int flags = REG_EXTENDED;
   if (case_insensitive) flags |= REG_ICASE;
@@ -72,34 +91,24 @@ int compile_regex(regex_t* regex, const char* pattern, int case_insensitive) {
   return ret;
 }
 
-void process_file(FILE* file_stream, const char* file_name,
-                  struct flags* use_flag, const char* pattern) {
-  regex_t regex;
-  if (compile_regex(&regex, pattern, use_flag->flag_i) != 0) return;
-  int count_str = 0, count_find_str = 0;
-  char* buffer_ptr = NULL;
-  size_t len = 0;
-  int flag_break = 0;
-  while (getline(&buffer_ptr, &len, file_stream) != -1 && !flag_break) {
-    char* ptr_end_string;
-    if ((ptr_end_string = strrchr(buffer_ptr, '\n')) != NULL)
-      *ptr_end_string = '\0';
-    int match = regexec(&regex, buffer_ptr, 0, NULL, 0);
-    count_str++;
-    if (match == 0) count_find_str++;
-    if (use_flag->flag_l && !match) {
-      printf("%s\n", file_name);
-      flag_break = 1;
-    }
-    if (!match && (use_flag->flag_e || use_flag->flag_i)) puts(buffer_ptr);
-    if (!match && use_flag->flag_n) {
-      printf("%d:", count_str);
-      puts(buffer_ptr);
-    }
-    if (use_flag->flag_v && match) puts(buffer_ptr);
+void process_line(const char* line_ptr, int line_num, regex_t* regex,
+                  struct flags* use_flag, int* count_find_str,
+                  const char* file_name, int* break_flag) {
+  int match = regexec(regex, line_ptr, 0, NULL, 0);
+
+  if (match == 0) (*count_find_str)++;
+  if (use_flag->flag_l && !match) {
+    printf("%s\n", file_name);
+    *break_flag = 1;
+    return;
   }
-  if (use_flag->flag_c) printf("%d\n", count_find_str);
-  free(buffer_ptr);
-  regfree(&regex);
-  return;
+  if (!match && (use_flag->flag_e || use_flag->flag_i)) {
+    puts(line_ptr);
+  }
+  if (!match && use_flag->flag_n) {
+    printf("%d:%s\n", line_num, line_ptr);
+  }
+  if (use_flag->flag_v && match) {
+    puts(line_ptr);
+  }
 }
