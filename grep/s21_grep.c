@@ -88,28 +88,15 @@ void process_file(FILE* file_stream, const char* file_name,
       printf("%s\n", file_name);
       flag_break = 1;
     }
-    if (use_flag->flag_e || use_flag->flag_i) print_match(buffer_ptr, &regex);
-    if (use_flag->flag_n) {
-      if (match == 0) printf("%d:", count_str);
-      print_match(buffer_ptr, &regex);
+    if (!match && (use_flag->flag_e || use_flag->flag_i)) puts(buffer_ptr);
+    if (!match && use_flag->flag_n) {
+      printf("%d:", count_str);
+      puts(buffer_ptr);
     }
-    if (use_flag->flag_v && (match != 0)) printf("%s\n", buffer_ptr);
+    if (use_flag->flag_v && match) puts(buffer_ptr);
   }
   if (use_flag->flag_c) printf("%d\n", count_find_str);
   free(buffer_ptr);
   regfree(&regex);
   return;
-}
-
-  void print_match(const char* buffer_ptr, regex_t* regex) {
-  int print_done = 0;
-  const char* start_find = buffer_ptr;
-  regmatch_t match;
-  while (regexec(regex, start_find, 1, &match, 0) == 0) {
-    print_done = 1;
-    printf("%.*s", match.rm_so, start_find);
-    printf("%.*s", match.rm_eo - match.rm_so, start_find + match.rm_so);
-    start_find += match.rm_eo;
-  }
-  if (print_done) printf("%s\n", start_find);
 }
