@@ -22,5 +22,7 @@ void print_file(char** file_name, struct flags* use_flag,
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern);
 int compile_regex(regex_t* regex, const char* pattern, int case_insensitive);
-
+void process_line(const char* line_ptr, int line_num, regex_t* regex,
+  struct flags* use_flag, int* count_find_str,
+  const char* file_name, int* break_flag);
 #endif
