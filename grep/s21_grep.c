@@ -52,7 +52,7 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
   for (int i = *ind_file; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
-      printf("./s21_cat: %s: No such file or directory\n", argv[i]);
+      printf("./s21_grep: %s: No such file or directory\n", argv[i]);
     } else {
       process_file(file_stream, argv[i], use_flag, argv[*ind_pattern]);
       fclose(file_stream);
@@ -62,7 +62,6 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
 
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern) {
-  char buffer[4096];
   regex_t regex;
   int match, count_str = 0, count_find_str = 0;
   if (use_flag->flag_i)
@@ -75,26 +74,29 @@ void process_file(FILE* file_stream, const char* file_name,
     printf("Error: %s\n", errbuf);
     return;
   }
+  char* buffer_ptr = NULL;
+  size_t len = 0;
   int flag_break = 0;
-  while (fgets(buffer, sizeof(buffer), file_stream) && !flag_break) {
+  while (getline(&buffer_ptr, &len, file_stream) != -1 && !flag_break) {
     char* ptr_end_string;
-    if ((ptr_end_string = strrchr(buffer, '\n')) != NULL)
+    if ((ptr_end_string = strrchr(buffer_ptr, '\n')) != NULL)
       *ptr_end_string = '\0';
-    int reg = regexec(&regex, buffer, 0, NULL, 0);
+    int reg = regexec(&regex, buffer_ptr, 0, NULL, 0);
     count_str++;
     if (reg == 0) count_find_str++;
     if (use_flag->flag_l && !reg) {
       printf("%s\n", file_name);
       flag_break = 1;
     }
-    if (use_flag->flag_e || use_flag->flag_i) print_match(buffer, &regex);
+    if (use_flag->flag_e || use_flag->flag_i) print_match(buffer_ptr, &regex);
     if (use_flag->flag_n) {
       if (reg == 0) printf("%d:", count_str);
-      print_match(buffer, &regex);
+      print_match(buffer_ptr, &regex);
     }
-    if (use_flag->flag_v && (reg != 0)) printf("%s\n", buffer);
+    if (use_flag->flag_v && (reg != 0)) printf("%s\n", buffer_ptr);
   }
   if (use_flag->flag_c) printf("%d\n", count_find_str);
+  free(buffer_ptr);
   regfree(&regex);
   return;
 }
