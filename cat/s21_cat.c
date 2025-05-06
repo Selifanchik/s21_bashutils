@@ -50,14 +50,12 @@ int parse_string(int argc, char** argv, CATFLAGS* flags, int* file_index,
         opterr = 0;
         flag_error = 1;
         break;
-      default:
-        if (optarg)
-          file_index[(*file_count)++] = optind - 1;
-        else {
-          printf("Unknown error");
-          flag_error = 1;
-        }
+      case 1:
+        file_index[(*file_count)++] = optind - 1;
         break;
+      default:
+        printf("Unknown error");
+        flag_error = 1;
     }
   }
   if (*file_count == 0 && !flag_error) {
