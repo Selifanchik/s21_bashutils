@@ -60,20 +60,23 @@ void print_file(char** argv, struct flags* use_flag, const int* ind_pattern,
   }
 }
 
+int compile_regex(regex_t* regex, const char* pattern, int case_insensitive) {
+  int flags = REG_EXTENDED;
+  if (case_insensitive) flags |= REG_ICASE;
+  int ret = regcomp(regex, pattern, flags);
+  if (ret != 0) {
+    char errbuf[100];
+    regerror(ret, regex, errbuf, sizeof(errbuf));
+    printf("Error: %s\n", errbuf);
+  }
+  return ret;
+}
+
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern) {
   regex_t regex;
-  int ret, count_str = 0, count_find_str = 0;
-  if (use_flag->flag_i)
-    ret = regcomp(&regex, pattern, REG_EXTENDED | REG_ICASE);
-  else
-    ret = regcomp(&regex, pattern, REG_EXTENDED);
-  if (ret != 0) {
-    char errbuf[100];
-    regerror(ret, &regex, errbuf, sizeof(errbuf));
-    printf("Error: %s\n", errbuf);
-    return;
-  }
+  if (compile_regex(&regex, pattern, use_flag->flag_i) != 0) return;
+  int count_str = 0, count_find_str = 0;
   char* buffer_ptr = NULL;
   size_t len = 0;
   int flag_break = 0;

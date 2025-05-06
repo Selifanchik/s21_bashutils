@@ -21,5 +21,6 @@ void print_file(char** file_name, struct flags* use_flag,
                 const int* ind_pattern, const int* ind_file, const int* argc);
 void process_file(FILE* file_stream, const char* file_name,
                   struct flags* use_flag, const char* pattern);
+int compile_regex(regex_t* regex, const char* pattern, int case_insensitive);
 
 #endif
