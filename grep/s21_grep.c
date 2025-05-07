@@ -2,22 +2,26 @@
 
 int main(int argc, char** argv) {
   GrepFlags flags = {};
-  int flag_error = 0;
-  if (!parse_string(argc, argv, &flags)) {
-    int ind_pattern = optind;
-    int ind_file = optind + 1;
-    print_file(argv, &flags, &ind_pattern, &ind_file, &argc);
+  int pattern_ind = 0, file_ind;
+  if (!parse_string(argc, argv, &flags, &pattern_ind)) {
+    if (!pattern_ind) { 
+      pattern_ind = optind;
+      file_ind = optind + 1;
+    } else file_ind = optind;
+    if (argc <= file_ind) printf("There are not enough parameters\n Usage: grep [OPTION] PATTERNS [FILE]");
+    else print_file(argv, &flags, &pattern_ind, &file_ind, &argc);
   }
-  return flag_error;
+  return 0;
 }
 
-int parse_string(int argc, char** argv, GrepFlags* flags) {
+int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+eivcln", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+e:ivcln", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
         flags->flag_e = 1;
+        *pattern_ind = optind - 1;
         break;
       case 'i':
         if (!flags->flag_c && !flags->flag_l) flags->flag_i = 1;
@@ -46,10 +50,6 @@ int parse_string(int argc, char** argv, GrepFlags* flags) {
   }
   GrepFlags zero = {};
   if (!memcmp(flags, &zero, sizeof(GrepFlags))) flags->flag_e = 1;
-  if (argc < optind + 2) {
-    printf("No arguments\n");
-    flag_error = 1;
-  }
   return flag_error;
 }
 

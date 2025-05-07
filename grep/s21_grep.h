@@ -17,7 +17,7 @@ typedef struct {
   int flag_n;
 } GrepFlags;
 
-int parse_string(int argc, char** argv, GrepFlags* flags);
+int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind);
 void print_file(char** file_name, GrepFlags* flags, const int* ind_pattern,
                 const int* ind_file, const int* argc);
 void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
