@@ -3,24 +3,29 @@
 int main(int argc, char** argv) {
   GrepFlags flags = {};
   int pattern_ind = 0, file_ind;
-  if (!parse_string(argc, argv, &flags, &pattern_ind)) {
-    if (!pattern_ind) { 
+  char pattern[1024] = {};
+  if (!parse_string(argc, argv, &flags, &pattern_ind, pattern)) {
+    // printf("\nafter parse optarg = %s, optind = %d", optarg, optind);
+    if (pattern[0] == '\0') { 
       pattern_ind = optind;
+      strcat(pattern, argv[pattern_ind]);
       file_ind = optind + 1;
     } else file_ind = optind;
-    if (argc <= file_ind) printf("There are not enough parameters\n Usage: grep [OPTION] PATTERNS [FILE]");
+    if (argc <= file_ind) printf("There are not enough parameters\n Usage: grep [OPTION] PATTERNS [FILE]\n");
     else print_file(argv, &flags, &pattern_ind, &file_ind, &argc);
   }
   return 0;
 }
 
-int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind) {
+int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind, char* pattern) {
   int opt, flag_error = 0;
   while ((opt = getopt_long(argc, argv, "+e:ivcln", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
         flags->flag_e = 1;
+        strcat(pattern, optarg);
+        // printf("before parse optarg = %s, optind = %d", optarg, optind);
         *pattern_ind = optind - 1;
         break;
       case 'i':
