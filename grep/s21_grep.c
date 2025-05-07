@@ -2,22 +2,21 @@
 
 int main(int argc, char** argv) {
   GrepFlags flags = {};
-  int pattern_ind = 0, file_ind;
+  int file_ind;
   char pattern[1024] = {};
-  if (!parse_string(argc, argv, &flags, &pattern_ind, pattern)) {
+  if (!parse_string(argc, argv, &flags, pattern)) {
     // printf("\nafter parse optarg = %s, optind = %d", optarg, optind);
     if (pattern[0] == '\0') { 
-      pattern_ind = optind;
-      strcat(pattern, argv[pattern_ind]);
+      strcat(pattern, argv[optind]);
       file_ind = optind + 1;
     } else file_ind = optind;
     if (argc <= file_ind) printf("There are not enough parameters\n Usage: grep [OPTION] PATTERNS [FILE]\n");
-    else print_file(argv, &flags, &pattern_ind, &file_ind, &argc);
+    else print_file(argv, &flags, pattern, &file_ind, &argc);
   }
   return 0;
 }
 
-int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind, char* pattern) {
+int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
   int opt, flag_error = 0;
   while ((opt = getopt_long(argc, argv, "+e:ivcln", NULL, NULL)) != -1 &&
          !flag_error) {
@@ -26,7 +25,6 @@ int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind, char
         flags->flag_e = 1;
         strcat(pattern, optarg);
         // printf("before parse optarg = %s, optind = %d", optarg, optind);
-        *pattern_ind = optind - 1;
         break;
       case 'i':
         if (!flags->flag_c && !flags->flag_l) flags->flag_i = 1;
@@ -58,14 +56,14 @@ int parse_string(int argc, char** argv, GrepFlags* flags, int* pattern_ind, char
   return flag_error;
 }
 
-void print_file(char** argv, GrepFlags* flags, const int* ind_pattern,
+void print_file(char** argv, GrepFlags* flags, const char* pattern,
                 const int* ind_file, const int* argc) {
   for (int i = *ind_file; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
       printf("./s21_grep: %s: No such file or directory\n", argv[i]);
     } else {
-      process_file(file_stream, argv[i], flags, argv[*ind_pattern]);
+      process_file(file_stream, argv[i], flags, pattern);
       fclose(file_stream);
     }
   }
