@@ -1,9 +1,9 @@
 all: s21_grep
 
-s21_cat: s21_grep.o
+s21_grep: s21_grep.o
 	gcc -o s21_grep s21_grep.o
 
-s21_cat.o: s21_cat.c
+s21_grep.o: s21_grep.c
 	gcc -Wall -Werror -Wextra -std=c11 -g -c s21_grep.c -o s21_grep.o
 
 clean:
