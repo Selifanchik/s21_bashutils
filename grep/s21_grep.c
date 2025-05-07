@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
       file_ind = optind + 1;
     } else file_ind = optind;
     if (argc <= file_ind) printf("There are not enough parameters\n Usage: grep [OPTION] PATTERNS [FILE]\n");
-    else print_file(argv, &flags, pattern, &file_ind, &argc);
+    else print_file(&argc, argv, &flags, pattern, &file_ind);
   }
   return 0;
 }
@@ -59,9 +59,9 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
   return flag_error;
 }
 
-void print_file(char** argv, GrepFlags* flags, const char* pattern,
-                const int* ind_file, const int* argc) {
-  for (int i = *ind_file; i < *argc; i++) {
+void print_file(const int* argc, char** argv, GrepFlags* flags, const char* pattern,
+                const int* file_ind) {
+  for (int i = *file_ind; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
       printf("./s21_grep: %s: No such file or directory\n", argv[i]);
