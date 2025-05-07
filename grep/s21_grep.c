@@ -64,17 +64,15 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
                   const char* pattern) {
   regex_t regex;
   if (compile_regex(&regex, pattern, flags->flag_i) != 0) return;
-  char* line_ptr = NULL;
-  size_t len = 0;
   int count_str = 0, count_find_str = 0, flag_break = 0;
-  while (getline(&line_ptr, &len, file_stream) != -1 && !flag_break) {
-    char* ptr_end_string = strrchr(line_ptr, '\n');
+  char line[size_line] = {};
+  while (fgets(line, sizeof(line), file_stream) && !flag_break) {
+    char* ptr_end_string = strrchr(line, '\n');
     if (ptr_end_string != NULL) *ptr_end_string = '\0';
-    process_line(line_ptr, ++count_str, &regex, flags, &count_find_str,
+    process_line(line, ++count_str, &regex, flags, &count_find_str,
                  file_name, &flag_break);
   }
   if (flags->flag_c) printf("%d\n", count_find_str);
-  free(line_ptr);
   regfree(&regex);
   return;
 }

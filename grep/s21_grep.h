@@ -4,8 +4,9 @@
 #include <getopt.h>
 #include <regex.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+enum {size_line = 4096};
 
 typedef struct {
   int flag_e;
