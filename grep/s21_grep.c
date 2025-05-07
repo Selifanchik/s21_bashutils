@@ -61,6 +61,7 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
 
 void print_file(const int* argc, char** argv, GrepFlags* flags, const char* pattern,
                 const int* file_ind) {
+  if (*argc - *file_ind < 2) flags->flag_h = 1;
   for (int i = *file_ind; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
@@ -112,12 +113,15 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
     return;
   }
   if (!match && (flags->flag_e || flags->flag_i)) {
+    if (!flags->flag_h) printf("%s:", file_name);
     puts(line_ptr);
   }
   if (!match && flags->flag_n) {
+    if (!flags->flag_h) printf("%s:", file_name);
     printf("%d:%s\n", line_num, line_ptr);
   }
   if (flags->flag_v && match) {
+    if (!flags->flag_h) printf("%s:", file_name);
     puts(line_ptr);
   }
 }

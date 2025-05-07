@@ -15,6 +15,7 @@ typedef struct {
   int flag_c;
   int flag_l;
   int flag_n;
+  int flag_h;
 } GrepFlags;
 
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern);
