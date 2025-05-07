@@ -109,25 +109,28 @@ int compile_regex(regex_t* regex, const char* pattern, int flag_i) {
 }
 
 void process_line(const char* line_ptr, int line_num, regex_t* regex,
-                  GrepFlags* flags, int* count_find_str, const char* file_name,
-                  int* break_flag) {
-  int match = regexec(regex, line_ptr, 0, NULL, 0);
-  if (match == 0) (*count_find_str)++;
-  if (flags->flag_l && !match) {
-    printf("%s\n", file_name);
-    *break_flag = 1;
-    return;
-  }
-  if (!match && (flags->flag_e || flags->flag_i || flags->flag_h)) {
-    if (!flags->flag_h) printf("%s:", file_name);
-    puts(line_ptr);
-  }
-  if (!match && flags->flag_n) {
-    if (!flags->flag_h) printf("%s:", file_name);
-    printf("%d:%s\n", line_num, line_ptr);
-  }
-  if (flags->flag_v && match) {
-    if (!flags->flag_h) printf("%s:", file_name);
-    puts(line_ptr);
-  }
+  GrepFlags* flags, int* count_find_str, const char* file_name,
+  int* break_flag) {
+int match = regexec(regex, line_ptr, 0, NULL, 0);
+if (match == 0) (*count_find_str)++;
+
+if (flags->flag_l && match == 0) {
+printf("%s\n", file_name);
+*break_flag = 1;
+return;
+}
+
+if (flags->flag_v && match != 0) {
+if (!flags->flag_h) printf("%s:", file_name);
+puts(line_ptr);
+return;
+}
+
+if (match == 0 && !flags->flag_v && !flags->flag_c) {
+if (!flags->flag_h) printf("%s:", file_name);
+if (flags->flag_n)
+printf("%d:%s\n", line_num, line_ptr);
+else
+puts(line_ptr);
+}
 }
