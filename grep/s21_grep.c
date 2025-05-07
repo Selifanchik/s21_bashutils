@@ -5,7 +5,6 @@ int main(int argc, char** argv) {
   int file_ind;
   char pattern[1024] = {};
   if (!parse_string(argc, argv, &flags, pattern)) {
-    // printf("\nafter parse optarg = %s, optind = %d", optarg, optind);
     if (pattern[0] == '\0') { 
       strcat(pattern, argv[optind]);
       file_ind = optind + 1;
@@ -22,9 +21,13 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
          !flag_error) {
     switch (opt) {
       case 'e':
-        flags->flag_e = 1;
-        strcat(pattern, optarg);
-        // printf("before parse optarg = %s, optind = %d", optarg, optind);
+        if (!flags->flag_e) {
+          flags->flag_e = 1;
+          strcat(pattern, optarg);
+        } else {
+          strcat(pattern, "|\0");
+          strcat(pattern, optarg);
+        }
         break;
       case 'i':
         if (!flags->flag_c && !flags->flag_l) flags->flag_i = 1;
