@@ -30,3 +30,15 @@ for flag in $flags; do
 		fi
 	done
 done
+
+name="Test without flag ..."
+draw_box "$name"
+for file in "$my_way/test_files/"*; do
+	./s21_grep $template $file > result_s21_grep.txt
+	grep $template $file -E > result_grep.txt
+	if diff -q result_s21_grep.txt result_grep.txt >/dev/null; then
+		echo -e "✅ \e[36m$(basename "$file")\e[0m"
+	else 
+		echo -e "❌ \e[36m$(basename "$file")\e[0m"
+	fi
+done

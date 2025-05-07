@@ -13,22 +13,26 @@ int main(int argc, char** argv) {
 
 int parse_string(int argc, char** argv, GrepFlags* flags) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+eivclnhsfo", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+eivcln", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
         flags->flag_e = 1;
         break;
       case 'i':
-        flags->flag_i = 1;
+        if (!flags->flag_c && !flags->flag_l) flags->flag_i = 1;
         break;
       case 'v':
-        flags->flag_v = 1;
+        if (!flags->flag_c && !flags->flag_l) flags->flag_v = 1;
         break;
       case 'c':
-        flags->flag_c = 1;
+        if (!flags->flag_l) {
+          memset(flags, 0, sizeof(*flags));
+          flags->flag_c = 1;
+        }
         break;
       case 'l':
+        memset(flags, 0, sizeof(*flags));
         flags->flag_l = 1;
         break;
       case 'n':
@@ -40,6 +44,8 @@ int parse_string(int argc, char** argv, GrepFlags* flags) {
         break;
     }
   }
+  GrepFlags zero = {};
+  if (!memcmp(flags, &zero, sizeof(GrepFlags))) flags->flag_e = 1;
   if (argc < optind + 2) {
     printf("No arguments\n");
     flag_error = 1;
@@ -93,7 +99,6 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
                   GrepFlags* flags, int* count_find_str, const char* file_name,
                   int* break_flag) {
   int match = regexec(regex, line_ptr, 0, NULL, 0);
-
   if (match == 0) (*count_find_str)++;
   if (flags->flag_l && !match) {
     printf("%s\n", file_name);
