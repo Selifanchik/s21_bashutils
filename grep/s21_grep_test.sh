@@ -31,6 +31,22 @@ for flag in $flags; do
 	done
 done
 
+file1="$my_way/test_files/sample-txt-files-sample2.txt"
+file2="$my_way/test_files/sample-txt-files-sample3.txt"
+
+draw_box "Test with two files..."
+for flag in $flags; do
+	name="Test flag $flag..."
+	draw_box "$name";
+	./s21_grep $flag $template $file1 $file2 > result_s21_grep.txt
+	grep $flag $template $file1 $file2 -E > result_grep.txt
+	if diff -q result_s21_grep.txt result_grep.txt >/dev/null; then
+		echo -e "✅ \e[36m$(basename "$file1") $(basename "$file2")\e[0m"
+	else 
+		echo -e "❌ \e[36m$(basename "$file1") $(basename "$file2")\e[0m"
+	fi
+done
+
 name="Test without flag ..."
 draw_box "$name"
 for file in "$my_way/test_files/"*; do
@@ -42,3 +58,4 @@ for file in "$my_way/test_files/"*; do
 		echo -e "❌ \e[36m$(basename "$file")\e[0m"
 	fi
 done
+

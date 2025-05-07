@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+e:ivcln", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+e:ivclnh", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
@@ -47,6 +47,9 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
         break;
       case 'n':
         flags->flag_n = 1;
+        break;
+      case 'h':
+        flags->flag_h = 1;
         break;
       case '?':
         opterr = 0;
@@ -85,7 +88,10 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
     process_line(line, ++count_str, &regex, flags, &count_find_str,
                  file_name, &flag_break);
   }
-  if (flags->flag_c) printf("%d\n", count_find_str);
+  if (flags->flag_c) {
+    if (!flags->flag_h) printf("%s:", file_name);
+    printf("%d\n", count_find_str);
+  }
   regfree(&regex);
   return;
 }
@@ -112,7 +118,7 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
     *break_flag = 1;
     return;
   }
-  if (!match && (flags->flag_e || flags->flag_i)) {
+  if (!match && (flags->flag_e || flags->flag_i || flags->flag_h)) {
     if (!flags->flag_h) printf("%s:", file_name);
     puts(line_ptr);
   }
