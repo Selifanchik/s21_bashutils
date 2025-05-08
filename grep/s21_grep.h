@@ -37,4 +37,5 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
                   int* break_flag);
 void open_pattern(char* pattern, const char* file_pattern, GrepFlags* flags,
                   TypeError* error);
+void print_only_matches(const char* pattern, regex_t* regex);
 #endif

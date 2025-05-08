@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
                  TypeError* error) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+e:ivclnhsf:", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+e:ivclnhsf:o", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
@@ -59,6 +59,9 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
         open_pattern(pattern, optarg, flags, error);
         if (error->error) flag_error = 1;
         flags->flag_f = 1;
+        break;
+      case 'o':
+        flags->flag_o = 1;
         break;
       case '?':
         opterr = 0;
@@ -158,11 +161,21 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
     return;
   }
 
-  if (match == 0 && !flags->flag_v && !flags->flag_c) {
+  if (match == 0 && !flags->flag_v && !flags->flag_c && !flags->flag_o) {
     if (!flags->flag_h) printf("%s:", file_name);
     if (flags->flag_n)
       printf("%d:%s\n", line_num, line_ptr);
     else
       puts(line_ptr);
+  }
+  if (flags->flag_o && match == 0) print_only_matches(line_ptr, regex);
+}
+
+void print_only_matches(const char* buffer, regex_t* regex) {
+  const char* start_find = buffer;
+  regmatch_t match;
+  while (regexec(regex, start_find, 1, &match, 0) == 0) {
+    printf("%.*s\n", match.rm_eo - match.rm_so, start_find + match.rm_so);
+    start_find += match.rm_eo + 1;
   }
 }
