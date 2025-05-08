@@ -27,8 +27,8 @@ typedef struct {
 
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
                  TypeError* error);
-void print_file(const int* argc, char** file_name, GrepFlags* flags,
-                const char* pattern, const int* ind_file);
+void open_file(const int* argc, char** file_name, GrepFlags* flags,
+               const char* pattern, const int* ind_file);
 void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
                   const char* pattern);
 int compile_regex(regex_t* regex, const char* pattern, int flag_i);

@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
           "There are not enough parameters\n Usage: grep [OPTION] PATTERNS "
           "[FILE]\n");
     else
-      print_file(&argc, argv, &flags, pattern, &file_ind);
+      open_file(&argc, argv, &flags, pattern, &file_ind);
   }
   return 0;
 }
@@ -86,8 +86,8 @@ void open_pattern(char* pattern, const char* file_pattern, TypeError* error) {
   }
 }
 
-void print_file(const int* argc, char** argv, GrepFlags* flags,
-                const char* pattern, const int* file_ind) {
+void open_file(const int* argc, char** argv, GrepFlags* flags,
+               const char* pattern, const int* file_ind) {
   if (*argc - *file_ind < 2) flags->flag_h = 1;
   for (int i = *file_ind; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
