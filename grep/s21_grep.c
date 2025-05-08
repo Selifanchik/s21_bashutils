@@ -2,9 +2,10 @@
 
 int main(int argc, char** argv) {
   GrepFlags flags = {};
+  TypeError error = {};
   int file_ind;
   char pattern[1024] = {};
-  if (!parse_string(argc, argv, &flags, pattern)) {
+  if (!parse_string(argc, argv, &flags, pattern, &error)) {
     if (pattern[0] == '\0') {
       strcat(pattern, argv[optind]);
       file_ind = optind + 1;
@@ -20,34 +21,29 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
+int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
+                 TypeError* error) {
   int opt, flag_error = 0;
-  while ((opt = getopt_long(argc, argv, "+e:ivclnh", NULL, NULL)) != -1 &&
+  while ((opt = getopt_long(argc, argv, "+e:ivclnhsf:", NULL, NULL)) != -1 &&
          !flag_error) {
     switch (opt) {
       case 'e':
-        if (!flags->flag_e) {
-          flags->flag_e = 1;
-          strcat(pattern, optarg);
-        } else {
+        if (flags->flag_e || flags->flag_f) {
           strcat(pattern, "|\0");
-          strcat(pattern, optarg);
         }
+        strcat(pattern, optarg);
+        flags->flag_e = 1;
         break;
       case 'i':
-        if (!flags->flag_c && !flags->flag_l) flags->flag_i = 1;
+        flags->flag_i = 1;
         break;
       case 'v':
-        if (!flags->flag_c && !flags->flag_l) flags->flag_v = 1;
+        flags->flag_v = 1;
         break;
       case 'c':
-        if (!flags->flag_l) {
-          memset(flags, 0, sizeof(*flags));
-          flags->flag_c = 1;
-        }
+        flags->flag_c = 1;
         break;
       case 'l':
-        memset(flags, 0, sizeof(*flags));
         flags->flag_l = 1;
         break;
       case 'n':
@@ -55,6 +51,14 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
         break;
       case 'h':
         flags->flag_h = 1;
+        break;
+      case 's':
+        flags->flag_s = 1;
+        break;
+      case 'f':
+        open_pattern(pattern, optarg, flags, error);
+        if (error->error) flag_error = 1;
+        flags->flag_f = 1;
         break;
       case '?':
         opterr = 0;
@@ -67,13 +71,36 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
   return flag_error;
 }
 
+void open_pattern(char* pattern, const char* file_pattern, GrepFlags* flags,
+                  TypeError* error) {
+  FILE* fp = fopen(file_pattern, "r");
+  if (!fp) {
+    printf("./s21_grep: %s: No such file or directory\n", file_pattern);
+    error->error = 1;
+  } else {
+    char pattern_buffer[size_line] = {};
+    int str_count = 0;
+    while (fgets(pattern_buffer, sizeof(pattern_buffer), fp)) {
+      str_count++;
+      char* ptr_end_string = strrchr(pattern_buffer, '\n');
+      if (ptr_end_string != NULL) *ptr_end_string = '\0';
+      if (flags->flag_e || flags->flag_f || str_count > 1) {
+        strcat(pattern, "|\0");
+      }
+      strcat(pattern, pattern_buffer);
+    }
+    fclose(fp);
+  }
+}
+
 void print_file(const int* argc, char** argv, GrepFlags* flags,
                 const char* pattern, const int* file_ind) {
   if (*argc - *file_ind < 2) flags->flag_h = 1;
   for (int i = *file_ind; i < *argc; i++) {
     FILE* file_stream = fopen(argv[i], "r");
     if (!file_stream) {
-      printf("./s21_grep: %s: No such file or directory\n", argv[i]);
+      if (!flags->flag_s)
+        printf("./s21_grep: %s: No such file or directory\n", argv[i]);
     } else {
       process_file(file_stream, argv[i], flags, pattern);
       fclose(file_stream);
