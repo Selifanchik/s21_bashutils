@@ -4,9 +4,9 @@ int main(int argc, char** argv) {
   GrepFlags flags = {};
   TypeError error = {};
   int file_ind;
-  char pattern[1024] = {};
+  char pattern[size_pattern] = {};
   if (!parse_string(argc, argv, &flags, pattern, &error)) {
-    if (pattern[0] == '\0') {
+    if (is_empty(pattern)) {
       strcat(pattern, argv[optind]);
       file_ind = optind + 1;
     } else
@@ -28,10 +28,7 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
          !flag_error) {
     switch (opt) {
       case 'e':
-        if (flags->flag_e || flags->flag_f) {
-          strcat(pattern, "|\0");
-        }
-        strcat(pattern, optarg);
+        append_pattern(pattern, optarg);
         flags->flag_e = 1;
         break;
       case 'i':
@@ -56,7 +53,7 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
         flags->flag_s = 1;
         break;
       case 'f':
-        open_pattern(pattern, optarg, flags, error);
+        open_pattern(pattern, optarg, error);
         if (error->error) flag_error = 1;
         flags->flag_f = 1;
         break;
@@ -74,23 +71,16 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
   return flag_error;
 }
 
-void open_pattern(char* pattern, const char* file_pattern, GrepFlags* flags,
-                  TypeError* error) {
+void open_pattern(char* pattern, const char* file_pattern, TypeError* error) {
   FILE* fp = fopen(file_pattern, "r");
   if (!fp) {
     printf("./s21_grep: %s: No such file or directory\n", file_pattern);
     error->error = 1;
   } else {
     char pattern_buffer[size_line] = {};
-    int str_count = 0;
     while (fgets(pattern_buffer, sizeof(pattern_buffer), fp)) {
-      str_count++;
-      char* ptr_end_string = strrchr(pattern_buffer, '\n');
-      if (ptr_end_string != NULL) *ptr_end_string = '\0';
-      if (flags->flag_e || flags->flag_f || str_count > 1) {
-        strcat(pattern, "|\0");
-      }
-      strcat(pattern, pattern_buffer);
+      remove_newline(pattern_buffer);
+      append_pattern(pattern, pattern_buffer);
     }
     fclose(fp);
   }
@@ -118,8 +108,7 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
   int count_str = 0, count_find_str = 0, flag_break = 0;
   char line[size_line] = {};
   while (fgets(line, sizeof(line), file_stream) && !flag_break) {
-    char* ptr_end_string = strrchr(line, '\n');
-    if (ptr_end_string != NULL) *ptr_end_string = '\0';
+    remove_newline(line);
     process_line(line, ++count_str, &regex, flags, &count_find_str, file_name,
                  &flag_break);
   }
@@ -168,7 +157,7 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
     else
       puts(line_ptr);
   }
-  if (flags->flag_o && match == 0) print_only_matches(line_ptr, regex);
+  if (flags->flag_o) print_only_matches(line_ptr, regex);
 }
 
 void print_only_matches(const char* buffer, regex_t* regex) {
@@ -176,6 +165,20 @@ void print_only_matches(const char* buffer, regex_t* regex) {
   regmatch_t match;
   while (regexec(regex, start_find, 1, &match, 0) == 0) {
     printf("%.*s\n", match.rm_eo - match.rm_so, start_find + match.rm_so);
-    start_find += match.rm_eo + 1;
+    start_find += match.rm_eo;
   }
+}
+
+int is_empty(const char* pattern) { return (pattern[0] == '\0') ? 1 : 0; }
+
+void remove_newline(char* str) {
+  char* ptr_end = strrchr(str, '\n');
+  if (ptr_end) *ptr_end = '\0';
+}
+
+void append_pattern(char* pattern, const char* new_part) {
+  if (!is_empty(pattern)) {
+    strcat(pattern, "|");
+  }
+  strcat(pattern, new_part);
 }
