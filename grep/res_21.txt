@@ -1,0 +1,12 @@
+.clang-format:---
+.clang-format:BasedOnStyle: Google
+file1.txt:Hello World
+file1.txt:This is a test string.
+file1.txt:FoO bar baz
+file1.txt:Another line
+file1.txt:foo
+file2.txt:hello again
+file2.txt:nothing here
+file2.txt:FooBar
+file2.txt:test string
+file2.txt:FOO FOO FOO

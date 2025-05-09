@@ -13,10 +13,8 @@ int main(int argc, char** argv) {
     } else
       file_ind = optind;
     if (argc <= file_ind)
-      printf(
-          "There are not enough parameters\n Usage: grep [OPTION] PATTERNS "
-          "[FILE]\n");
-    else
+      printf("Usage: grep [OPTION] PATTERNS [FILE]\n");
+    else if (!(flags.flag_o && flags.flag_v))
       print_file(&argc, argv, &flags, pattern, &file_ind);
   }
   return 0;
@@ -106,7 +104,7 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
     process_line(line, ++count_str, &regex, flags, &count_find_str, file_name,
                  &flag_break);
   }
-  if (flags->flag_c) {
+  if (flags->flag_c && !flags->flag_l) {
     if (!flags->flag_h) printf("%s:", file_name);
     printf("%d\n", count_find_str);
   }
@@ -126,38 +124,43 @@ int compile_regex(regex_t* regex, const char* pattern, int flag_i) {
 }
 
 void process_line(const char* line_ptr, int line_num, regex_t* regex,
-                  GrepFlags* flags, int* count_find_str, const char* file_name,
+                  GrepFlags* flags, int* match_count, const char* file_name,
                   int* break_flag) {
   int match = regexec(regex, line_ptr, 0, NULL, 0);
-  if (match == 0) (*count_find_str)++;
+  int is_match = (match == 0);
 
-  if (flags->flag_l && match == 0) {
+  if (flags->flag_l &&
+      ((is_match && !flags->flag_v) || (!is_match && flags->flag_v))) {
     printf("%s\n", file_name);
     *break_flag = 1;
-    return;
-  }
-
-  if (flags->flag_v && match != 0) {
-    if (!flags->flag_h) printf("%s:", file_name);
+  } else if (flags->flag_c &&
+             ((is_match && !flags->flag_v) || (!is_match && flags->flag_v)))
+    (*match_count)++;
+  else if (flags->flag_o) {
+    print_only_matches(line_ptr, regex, flags, file_name, &line_num);
+  } else if (flags->flag_v && !is_match) {
+    print_name_and_number(flags, file_name, &line_num);
     puts(line_ptr);
-    return;
+  } else if (is_match && !flags->flag_v) {
+    print_name_and_number(flags, file_name, &line_num);
+    puts(line_ptr);
   }
-
-  if (match == 0 && !flags->flag_v && !flags->flag_c && !flags->flag_o) {
-    if (!flags->flag_h) printf("%s:", file_name);
-    if (flags->flag_n)
-      printf("%d:%s\n", line_num, line_ptr);
-    else
-      puts(line_ptr);
-  }
-  if (flags->flag_o) print_only_matches(line_ptr, regex);
 }
 
-void print_only_matches(const char* buffer, regex_t* regex) {
+void print_only_matches(const char* buffer, regex_t* regex,
+                        const GrepFlags* flags, const char* file_name,
+                        const int* line_num) {
   const char* start_find = buffer;
   regmatch_t match;
   while (regexec(regex, start_find, 1, &match, 0) == 0) {
+    print_name_and_number(flags, file_name, line_num);
     printf("%.*s\n", match.rm_eo - match.rm_so, start_find + match.rm_so);
     start_find += (match.rm_so == match.rm_eo) ? 1 : match.rm_eo;
   }
+}
+
+void print_name_and_number(const GrepFlags* flags, const char* file_name,
+                           const int* line_num) {
+  if (!flags->flag_h) printf("%s:", file_name);
+  if (flags->flag_n) printf("%d:", *line_num);
 }

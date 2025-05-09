@@ -31,6 +31,10 @@ void process_line(const char* line_ptr, int line_num, regex_t* regex,
                   GrepFlags* flags, int* count_find_str, const char* file_name,
                   int* break_flag);
 int open_pattern(char* pattern, const char* file_pattern);
-void print_only_matches(const char* pattern, regex_t* regex);
+void print_only_matches(const char* buffer, regex_t* regex,
+                        const GrepFlags* flags, const char* file_name,
+                        const int* line_num);
+void print_name_and_number(const GrepFlags* flags, const char* file_name,
+                           const int* line_num);
 
 #endif
