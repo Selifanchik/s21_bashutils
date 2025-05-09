@@ -2,10 +2,9 @@
 
 int main(int argc, char** argv) {
   GrepFlags flags = {};
-  TypeError error = {};
   int file_ind;
   char pattern[size_pattern] = {};
-  if (!parse_string(argc, argv, &flags, pattern, &error)) {
+  if (!parse_string(argc, argv, &flags, pattern)) {
     if (is_empty(pattern)) {
       strcat(pattern, argv[optind]);
       file_ind = optind + 1;
@@ -16,13 +15,12 @@ int main(int argc, char** argv) {
           "There are not enough parameters\n Usage: grep [OPTION] PATTERNS "
           "[FILE]\n");
     else
-      open_file(&argc, argv, &flags, pattern, &file_ind);
+      print_file(&argc, argv, &flags, pattern, &file_ind);
   }
   return 0;
 }
 
-int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
-                 TypeError* error) {
+int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
   int opt, flag_error = 0;
   while ((opt = getopt_long(argc, argv, "+e:ivclnhsf:o", NULL, NULL)) != -1 &&
          !flag_error) {
@@ -53,8 +51,7 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
         flags->flag_s = 1;
         break;
       case 'f':
-        open_pattern(pattern, optarg, error);
-        if (error->error) flag_error = 1;
+        if (open_pattern(pattern, optarg)) flag_error = 1;
         flags->flag_f = 1;
         break;
       case 'o':
@@ -71,30 +68,27 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern,
   return flag_error;
 }
 
-void open_pattern(char* pattern, const char* file_pattern, TypeError* error) {
-  FILE* fp = fopen(file_pattern, "r");
-  if (!fp) {
-    printf("./s21_grep: %s: No such file or directory\n", file_pattern);
-    error->error = 1;
-  } else {
+int open_pattern(char* pattern, const char* file_pattern) {
+  int flag_s = 0, flag_error = 0;
+  FILE* file_stream = open_file(file_pattern, &flag_s);
+  if (file_stream) {
     char pattern_buffer[size_line] = {};
-    while (fgets(pattern_buffer, sizeof(pattern_buffer), fp)) {
+    while (fgets(pattern_buffer, sizeof(pattern_buffer), file_stream)) {
       remove_newline(pattern_buffer);
       append_pattern(pattern, pattern_buffer);
     }
-    fclose(fp);
-  }
+    fclose(file_stream);
+  } else
+    flag_error = 1;
+  return flag_error;
 }
 
-void open_file(const int* argc, char** argv, GrepFlags* flags,
-               const char* pattern, const int* file_ind) {
+void print_file(const int* argc, char** argv, GrepFlags* flags,
+                const char* pattern, const int* file_ind) {
   if (*argc - *file_ind < 2) flags->flag_h = 1;
   for (int i = *file_ind; i < *argc; i++) {
-    FILE* file_stream = fopen(argv[i], "r");
-    if (!file_stream) {
-      if (!flags->flag_s)
-        printf("./s21_grep: %s: No such file or directory\n", argv[i]);
-    } else {
+    FILE* file_stream = open_file(argv[i], &flags->flag_s);
+    if (file_stream) {
       process_file(file_stream, argv[i], flags, pattern);
       fclose(file_stream);
     }
@@ -117,7 +111,6 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
     printf("%d\n", count_find_str);
   }
   regfree(&regex);
-  return;
 }
 
 int compile_regex(regex_t* regex, const char* pattern, int flag_i) {
@@ -165,11 +158,11 @@ void print_only_matches(const char* buffer, regex_t* regex) {
   regmatch_t match;
   while (regexec(regex, start_find, 1, &match, 0) == 0) {
     printf("%.*s\n", match.rm_eo - match.rm_so, start_find + match.rm_so);
-    start_find += match.rm_eo;
+    start_find += (match.rm_so == match.rm_eo) ? 1 : match.rm_eo;
   }
 }
 
-int is_empty(const char* pattern) { return (pattern[0] == '\0') ? 1 : 0; }
+int is_empty(const char* pattern) { return (pattern[0] == '\0'); }
 
 void remove_newline(char* str) {
   char* ptr_end = strrchr(str, '\n');
@@ -181,4 +174,11 @@ void append_pattern(char* pattern, const char* new_part) {
     strcat(pattern, "|");
   }
   strcat(pattern, new_part);
+}
+
+FILE* open_file(const char* file_name, const int* flag_s) {
+  FILE* file_stream = fopen(file_name, "r");
+  if (!file_stream && !flag_s)
+    printf("./s21_grep: %s: No such file or directory\n", file_name);
+  return file_stream;
 }
