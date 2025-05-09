@@ -22,19 +22,19 @@ typedef struct {
 } GrepFlags;
 
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern);
-void print_file(const int* argc, char** file_name, GrepFlags* flags,
-                const char* pattern, const int* ind_file);
+void apply_grep_to_files(int argc, char** file_name, GrepFlags* flags,
+                         const char* pattern, const int* ind_file);
 void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
                   const char* pattern);
 int compile_regex(regex_t* regex, const char* pattern, int flag_i);
-void process_line(const char* line_ptr, int line_num, regex_t* regex,
-                  GrepFlags* flags, int* count_find_str, const char* file_name,
+void process_line(const char* line_ptr, int line_count, regex_t* regex,
+                  GrepFlags* flags, int* selected_count, const char* file_name,
                   int* break_flag);
 int open_pattern(char* pattern, const char* file_pattern);
 void print_only_matches(const char* buffer, regex_t* regex,
                         const GrepFlags* flags, const char* file_name,
-                        const int* line_num);
+                        int line_count);
 void print_name_and_number(const GrepFlags* flags, const char* file_name,
-                           const int* line_num);
+                           int line_count);
 
 #endif
