@@ -1,5 +1,0 @@
-Hello World
-This is a test string.
-FoO bar baz
-Another line
-foo
