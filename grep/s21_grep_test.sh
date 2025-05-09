@@ -8,7 +8,7 @@ template1="apple"
 template2="ana"
 
 res_grep="result_grep.txt"
-s21_res_grep="s21_result_grep.txt"
+s21_res_grep="result_s21_grep.txt"
 
 draw_box() {
     text="$1"
