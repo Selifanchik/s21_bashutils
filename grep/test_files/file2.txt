@@ -1,0 +1,6 @@
+cat
+dog
+mouse
+fish
+apple
+banana
