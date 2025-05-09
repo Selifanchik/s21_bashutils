@@ -24,10 +24,9 @@ struct option long_options[] = {
 
 int parse_string(int argc, char** argv, CatFlags* flags, int* arg_index,
                  int* ind);
-void print_file(char** file_name, CatFlags* flags, const int* arg_ind,
-                const int* ind);
+void open_file(char** file_name, CatFlags* flags, const int* arg_ind, int ind);
 void process_file(FILE* file_stream, CatFlags* flags, int* count_number,
                   char* previous_symbol, int* count_empty_line);
-void show_nonpriting_char(const int* symbol, int* print_done);
+void show_nonpriting_char(int symbol, int* print_done);
 
 #endif
