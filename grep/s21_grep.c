@@ -1,5 +1,7 @@
 #include "s21_grep.h"
 
+#include "utils.h"
+
 int main(int argc, char** argv) {
   GrepFlags flags = {};
   int file_ind;
@@ -63,8 +65,6 @@ int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern) {
         break;
     }
   }
-  GrepFlags zero = {};
-  if (!memcmp(flags, &zero, sizeof(GrepFlags))) flags->flag_e = 1;
   return flag_error;
 }
 
@@ -160,25 +160,4 @@ void print_only_matches(const char* buffer, regex_t* regex) {
     printf("%.*s\n", match.rm_eo - match.rm_so, start_find + match.rm_so);
     start_find += (match.rm_so == match.rm_eo) ? 1 : match.rm_eo;
   }
-}
-
-int is_empty(const char* pattern) { return (pattern[0] == '\0'); }
-
-void remove_newline(char* str) {
-  char* ptr_end = strrchr(str, '\n');
-  if (ptr_end) *ptr_end = '\0';
-}
-
-void append_pattern(char* pattern, const char* new_part) {
-  if (!is_empty(pattern)) {
-    strcat(pattern, "|");
-  }
-  strcat(pattern, new_part);
-}
-
-FILE* open_file(const char* file_name, const int* flag_s) {
-  FILE* file_stream = fopen(file_name, "r");
-  if (!file_stream && !flag_s)
-    printf("./s21_grep: %s: No such file or directory\n", file_name);
-  return file_stream;
 }
