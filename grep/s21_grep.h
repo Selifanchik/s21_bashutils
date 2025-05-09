@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-enum { size_line = 4096, size_pattern = 1096 };
+enum { SIZE_LINE = 4096, SIZE_PATTERN = 1096 };
 
 typedef struct {
   int flag_e;
@@ -19,6 +19,7 @@ typedef struct {
   int flag_s;
   int flag_f;
   int flag_o;
+  int break_flag;
 } GrepFlags;
 
 int parse_string(int argc, char** argv, GrepFlags* flags, char* pattern);
@@ -28,8 +29,7 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
                   const char* pattern);
 int compile_regex(regex_t* regex, const char* pattern, int flag_i);
 void process_line(const char* line_ptr, int line_count, regex_t* regex,
-                  GrepFlags* flags, int* selected_count, const char* file_name,
-                  int* break_flag);
+                  GrepFlags* flags, int* selected_count, const char* file_name);
 int open_pattern(char* pattern, const char* file_pattern);
 void print_only_matches(const char* buffer, regex_t* regex,
                         const GrepFlags* flags, const char* file_name,

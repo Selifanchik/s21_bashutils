@@ -15,6 +15,6 @@ format:
 
 
 clean:
-	rm -f s21_grep.o s21_grep
+	rm -rf s21_grep.o s21_grep utils.o utils
 
 rebuild: clean all

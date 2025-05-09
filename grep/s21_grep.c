@@ -5,7 +5,7 @@
 int main(int argc, char** argv) {
   GrepFlags flags = {};
   int file_ind;
-  char pattern[size_pattern] = {};
+  char pattern[SIZE_PATTERN] = {};
   if (!parse_string(argc, argv, &flags, pattern)) {
     if (is_empty(pattern)) {
       strcat(pattern, argv[optind]);
@@ -74,7 +74,7 @@ int open_pattern(char* pattern, const char* file_pattern) {
   int flag_s = 0, flag_error = 0;
   FILE* file_stream = open_file(file_pattern, &flag_s);
   if (file_stream) {
-    char pattern_buffer[size_line] = {};
+    char pattern_buffer[SIZE_LINE] = {};
     while (fgets(pattern_buffer, sizeof(pattern_buffer), file_stream)) {
       remove_newline(pattern_buffer);
       append_pattern(pattern, pattern_buffer);
@@ -104,12 +104,12 @@ void process_file(FILE* file_stream, const char* file_name, GrepFlags* flags,
                   const char* pattern) {
   regex_t regex;
   if (compile_regex(&regex, pattern, flags->flag_i) != 0) return;
-  int line_count = 0, selected_count = 0, flag_break = 0;
-  char line[size_line] = {};
-  while (fgets(line, sizeof(line), file_stream) && !flag_break) {
+  int line_count = 0, selected_count = 0;
+  flags->break_flag = 0;
+  char line[SIZE_LINE] = {};
+  while (fgets(line, sizeof(line), file_stream) && !flags->break_flag) {
     remove_newline(line);
-    process_line(line, ++line_count, &regex, flags, &selected_count, file_name,
-                 &flag_break);
+    process_line(line, ++line_count, &regex, flags, &selected_count, file_name);
   }
   if (flags->flag_c && !flags->flag_l) {
     if (!flags->flag_h) {
@@ -135,15 +135,14 @@ int compile_regex(regex_t* regex, const char* pattern, int flag_i) {
 }
 
 void process_line(const char* line_ptr, int line_count, regex_t* regex,
-                  GrepFlags* flags, int* selected_count, const char* file_name,
-                  int* break_flag) {
+                  GrepFlags* flags, int* selected_count,
+                  const char* file_name) {
   int match = regexec(regex, line_ptr, 0, NULL, 0);
   int is_match = (match == 0);
-
   if (flags->flag_l &&
       ((is_match && !flags->flag_v) || (!is_match && flags->flag_v))) {
     printf("%s\n", file_name);
-    *break_flag = 1;
+    flags->break_flag = 1;
   } else if (flags->flag_c &&
              ((is_match && !flags->flag_v) || (!is_match && flags->flag_v))) {
     (*selected_count)++;
