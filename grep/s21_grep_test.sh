@@ -13,10 +13,6 @@ s21_res_grep="result_s21_grep.txt"
 draw_box() {
     text="$1"
     length=${#text}
-    if [ "$length" -gt 50 ]; then
-        text="${text:0:47}..."
-        length=50
-    fi
     printf '+'
     for ((i = 0; i < length + 2; i++)); do printf '-'; done
     printf '+\n'
